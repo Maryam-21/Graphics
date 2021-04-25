@@ -1,0 +1,47 @@
+#version 330 core
+
+// Ouput data
+out vec3 color;
+in vec3 pixelcolor;
+
+in vec2 Tex;
+varying float texOn;
+uniform sampler2D myTextureSampler;
+
+in vec3 position_worldspace;
+in vec3 normal_worldspace;
+varying float lightOn;
+
+uniform vec3 LightPosition_worldspace;
+uniform vec3 EyePosition_worldspace;
+uniform vec3 aL;
+uniform vec3 diff;
+uniform vec3 specularLight;
+uniform vec2 data;
+
+void main()
+{
+	if (lightOn > 0.5f)
+	{
+		if(texOn == 1)
+			color = texture(myTextureSampler,Tex).rgb;
+		else
+			color = pixelcolor;
+		vec3 lightVector = normalize(LightPosition_worldspace - position_worldspace);
+	
+		float specularExponent = data.y;
+		vec3 specular = specularExponent * specularLight;
+
+		float d = abs(distance(position_worldspace,LightPosition_worldspace));
+		float r = data.x;
+		float att = 1 - (d/r);
+		if ( att < 0)
+			att = 0;
+
+		color = (aL + ((diff*lightVector) + specular)*att) * color;
+	}
+	else if(texOn == 0)
+		color = pixelcolor;
+	else
+		color = texture(myTextureSampler,Tex).rgb;
+}
